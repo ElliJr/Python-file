@@ -4,6 +4,10 @@ from tkinter import filedialog, messagebox
 
 def abrir_link():
     # Substitua pelo link que você deseja abrir
+    url = "https://ellijr.github.io/COFFE--Site/"
+    webbrowser.open(url)
+def abrir_link2():
+    # Substitua pelo link que você deseja abrir
     url = "https://ellijr.github.io/CBFengenharia/"
     webbrowser.open(url)
 
@@ -47,8 +51,11 @@ menu_barra.add_cascade(label="clica aqui mano", menu=arquivo_menu)
 arquivo_menu.add_command(label="Novo", command=novo_arquivo)
 arquivo_menu.add_command(label="Abrir...", command=abrir_arquivo)
 arquivo_menu.add_command(label="Salvar Como...", command=salvar_arquivo)
-arquivo_menu.add_command(label="Ir para o site...", command=abrir_link )
 arquivo_menu.add_command(label="Sair", command=janela.quit)
 
+arquivo_menu1 = tk.Menu(menu_barra, tearoff=0)
+menu_barra.add_cascade(label="Ir para o site...", menu=arquivo_menu1)
+arquivo_menu1.add_command(label="COFFE... ", command=abrir_link)
+arquivo_menu1.add_command(label="CBFengenharia... ", command=abrir_link2)
 # Executar o aplicativo
 janela.mainloop()
