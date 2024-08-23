@@ -15,8 +15,8 @@ speed(1000)
 bgcolor("black")
 
 for i in range(6000):
-    goto(hearta(i)*17,heartb(i)*20)
-    for j in range(5):
+    goto(hearta(i)*17,heartb(i)*17)
+    for j in range(3):
         color("purple")
-    goto(0,0)
+    
 done()
