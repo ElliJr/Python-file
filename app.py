@@ -1,22 +1,64 @@
-import math
-from turtle import *
+import tkinter as tk
+import webbrowser
+from tkinter import filedialog, messagebox
 
-def hearta(k):
-    return 15*math.sin(k)**3
+def abrir_link():    
+    url = "https://ellijr.github.io/COFFE--Site/"
+    webbrowser.open(url)
+def abrir_link2():
+    url = "https://ellijr.github.io/CBFengenharia/"
+    webbrowser.open(url)
+def abrir_link3():
+    url = "https://ellijr.github.io/portifolio/"
+    webbrowser.open(url)
 
-def heartb(k):
-    return 12*math.cos(k)-5*\
-    math.cos(2*k)-2*\
-    math.cos(3*k)-\
-    math.cos(4*k)
-    
+def novo_arquivo():
+    texto.delete(1.0, tk.END)
 
-speed(1000)
-bgcolor("black")
+def abrir_arquivo():
+    caminho_arquivo = filedialog.askopenfilename(defaultextension=".txt", 
+                                                 filetypes=[("Arquivos de texto", "*.txt"), 
+                                                            ("Todos os arquivos", "*.*")])
+    if caminho_arquivo:
+        with open(caminho_arquivo, "r") as arquivo:
+            conteudo = arquivo.read()
+            texto.delete(1.0, tk.END)
+            texto.insert(tk.END, conteudo)
 
-for i in range(6000):
-    goto(hearta(i)*17,heartb(i)*17)
-    for j in range(3):
-        color("purple")
-    
-done()
+def salvar_arquivo():
+    caminho_arquivo = filedialog.asksaveasfilename(defaultextension=".txt", 
+                                                   filetypes=[("Arquivos de texto", "*.txt"), 
+                                                              ("Todos os arquivos", "*.*")])
+    if caminho_arquivo:
+        with open(caminho_arquivo, "w") as arquivo:
+            conteudo = texto.get(1.0, tk.END)
+            arquivo.write(conteudo)
+            messagebox.showinfo("Salvido", "Teu arquivo foi salvo manin!😃")
+
+# Configurar a janela principal
+janela = tk.Tk()
+janela.title("APP do Elli")
+
+# Adicionar uma área de texto
+texto = tk.Text(janela, wrap='word')
+texto.pack(expand=True, fill='both')
+
+# Adicionar um menu
+menu_barra = tk.Menu(janela)
+janela.config(menu=menu_barra)
+
+
+arquivo_menu = tk.Menu(menu_barra, tearoff=0)
+menu_barra.add_cascade(label="Menu", menu=arquivo_menu)
+arquivo_menu.add_command(label="👉Novo", command=novo_arquivo)
+arquivo_menu.add_command(label="👉Abrir", command=abrir_arquivo)
+arquivo_menu.add_command(label="👉Salvar Como", command=salvar_arquivo)
+arquivo_menu.add_command(label="👉Sair", command=janela.quit)
+
+arquivo_menu1 = tk.Menu(menu_barra, tearoff=0)
+menu_barra.add_cascade(label="Abrir site", menu=arquivo_menu1)
+arquivo_menu1.add_command(label="👉COFFE", command=abrir_link,)
+arquivo_menu1.add_command(label="👉CBFengenharia", command=abrir_link2)
+arquivo_menu1.add_command(label="👉Portífolio", command=abrir_link3)
+# Executar o aplicativo
+janela.mainloop()
