@@ -3,7 +3,7 @@ import openai
 import tkinter as tk
 
 
-openai.api_key = 'sk-g1p1jZK39-bmqQr0hiY8ixgGf4Zw28rzrUXEm65bS0T3BlbkFJ12BVa2lRRLbsp6slAtYVQQ8SsSjGreg0-KO4nOLmEA'  # Substitua pela sua chave da API
+openai.api_key = 'sk-oihiwAfkUiAdv6MnpbcZ-aMzazaGO-jOnDGsivl0YbT3BlbkFJXqpHSWf2nEQLEMZRd1nGHgtCBUO4EdhOKsXaQDMw0A'  # Substitua pela sua chave da API
 
 def chatbot_response(prompt):
     try:
@@ -27,7 +27,7 @@ def send_message():
     entry.delete(0, tk.END)
 
     response = chatbot_response(user_input)
-    chat_history.insert(tk.END, "Bot: " + response + "\n")
+    chat_history.insert(tk.END, "Lav: " + response + "\n")
     chat_history.config(state=tk.DISABLED)
     chat_history.yview(tk.END)
 
