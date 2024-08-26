@@ -35,6 +35,7 @@ responses = {
     "filha da puta": ["fala o que você quiser seu bostinha eu não tenho mãe mesmo"],
     "vai se fuder": ["vai vc desgraça"],
     "pesquisa": ["o que vc quer saber"],
+    "meu pai morreu": ["grande merda isso kkkkkkkkkkkkkkkkkkkk"],
 }
 
 # Função que encontra a resposta apropriada
