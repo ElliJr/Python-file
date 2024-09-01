@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 import random
 import wikipedia
 import speech_recognition as sr
@@ -15,13 +16,13 @@ def abrir_link3():
     url = "https://ellijr.github.io/portifolio/"
     webbrowser.open(url)
 def abrir_link4():
-    url = "https://ellijr.github.io/"
+    url = "https://github.com/ElliJr"
     webbrowser.open(url)
 
 # Inicializa o motor de TTS (text-to-speech)
 engine = pyttsx3.init()
 engine.setProperty('rate', 150)  # Velocidade da fala
-engine.setProperty('volume', 25)  # Nível de volume
+engine.setProperty('volume', 14)  # Nível de volume
 
 # Respostas pré-definidas do chatbot
 responses = {
@@ -56,7 +57,6 @@ responses = {
     "Até mais": ["já vai tarde.", "não foi ainda porque", "tchau nada, não quero te ver mais."],
     "Ate mais": ["já vai tarde.", "não foi ainda porque", "tchau nada, não quero te ver mais."],
     "até mais": ["já vai tarde.", "não foi ainda porque", "tchau nada, não quero te ver mais."],
-    #"filha da puta": ["fala o que você quiser seu bostinha eu não tenho mãe mesmo"],
     "vai se fuder": ["vai vc desgraça"],
     "pesquisar": ["o que você quer saber"],
     "pesquisa": ["o que você quer saber"],
@@ -111,11 +111,14 @@ responses = {
     "qual seu código": ["você quer mesmo saber(digite Y para sim, N para não)"],
     "qual seu codigo": ["você quer mesmo saber(digite Y para sim, N para não)"],
     "y": ["aqui vai ele...... Hello word otário  kkkkkkkkkkk não vou passar meu código fonte kkkkkkkkk😃"],
-    "n": ["que pena"],
+
     "vc pode fazer pesquisa na web?": ["posso fazer pequisas, mas não sou tão boa quanto um chaTGPT da vida "],
     "vc pode fazer pesquisa na web": ["posso fazer pequisas, mas não sou tão boa quanto um chaTGPT da vida"],
     "diga a frase": ["pode deixar... Eu te apresento o poder da sakánade, ela inverte o senso de direção do oponente tornando tudo como um quebra cabeça, engraçado né, você nunca deve ter jogado video game... parece que você não notou, pra frente e pra trás, esquerda e direita tudo está invertido, com todas essas mudanças de direção é hora de se perguntar se você poderá lutar enquanto inverte tudo dentro da sua cabeça, bem vindo Aizem ao mundo invertido.... musicá incrivel no fundo "],
-    "a frase": ["pode deixar... Eu te apresento o poder da sakánade, ela inverte o senso de direção do oponente tornando tudo como um quebra cabeça, engraçado né, você nunca deve ter jogado video game... parece que você não notou, pra frente e pra trás, esquerda e direita tudo está invertido, com todas essas mudanças de direção é hora de se perguntar se você poderá lutar enquanto inverte tudo dentro da sua cabeça, bem vindo Aizem ao mundo invertido.... musicá incrivel no fundo"]
+    "a frase": ["pode deixar... Eu te apresento o poder da sakánade, ela inverte o senso de direção do oponente tornando tudo como um quebra cabeça, engraçado né, você nunca deve ter jogado video game... parece que você não notou, pra frente e pra trás, esquerda e direita tudo está invertido, com todas essas mudanças de direção é hora de se perguntar se você poderá lutar enquanto inverte tudo dentro da sua cabeça, bem vindo Aizem ao mundo invertido.... musicá incrivel no fundo"],
+    "fala para o heitor ir tomar banho":["vai tomar banho cagão"],
+    "ele disse que não quer irtomar banho":["oque?, eu vou chamar a mãe dele"],
+    "":["se certifique de ter escrito algo mano"]
 }
 
 # Função que encontra a resposta apropriada
@@ -154,50 +157,34 @@ def send_message():
     chat_history.yview(tk.END)
     falar(response)
 
-# Função para ouvir e processar comando de voz
-def ouvir_voz():
-    reconhecedor = sr.Recognizer()
-    with sr.Microphone() as source:
-        print("Ouvindo...")
-        reconhecedor.adjust_for_ambient_noise(source)
-        audio = reconhecedor.listen(source)
-
-    try:
-        comando = reconhecedor.recognize_google(audio, language='pt-BR')
-        print(f"Você disse: {comando}")
-        entry.delete(0, tk.END)
-        entry.insert(0, comando)
-        send_message()
-    except sr.UnknownValueError:
-        chat_history.insert(tk.END, "Lav: Desculpe, não entendi o que você disse, talvez seja porque você usou abreviação. Reformule a pergunta sem abreviação\n")
-        chat_history.yview(tk.END)
-        falar("Desculpe, não entendi o que você disse, talvez seja porque você usou abreviação. Reformule a pergunta sem abreviação")
-    except sr.RequestError:
-        chat_history.insert(tk.END, "Lav: Desculpe, não consegui acessar o serviço de reconhecimento de voz.\n")
-        chat_history.yview(tk.END)
-        falar("Desculpe, não consegui acessar o serviço de reconhecimento de voz.")
-
 # Configuração da janela Tkinter
 root = tk.Tk()
 root.title("Lav🦋")
+root.geometry("500x400")
+
+# Menu
 menu_barra = tk.Menu(root)
 root.config(menu=menu_barra)
 
 arquivo_menu1 = tk.Menu(menu_barra, tearoff=0)
 menu_barra.add_cascade(label="Abrir site", menu=arquivo_menu1)
-arquivo_menu1.add_command(label="👉COFFE", command=abrir_link,)
+arquivo_menu1.add_command(label="👉COFFE", command=abrir_link)
 arquivo_menu1.add_command(label="👉CBFengenharia", command=abrir_link2)
 arquivo_menu1.add_command(label="👉Portífolio", command=abrir_link3)
-arquivo_menu1.add_command(label="👉GitHub", command=abrir_link4)
 
+# Chat history (caixa de texto)
 chat_history = tk.Text(root, bd=1, bg="lightgrey", width=80, height=20, wrap=tk.WORD, state=tk.DISABLED)
-chat_history.grid(row=0,column=0, columnspan=2, padx=10, pady=10)
-chat_history = PhotoImage(file="")
+chat_history.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
 
-entry = tk.Entry(root, bd=1, background="lightgrey",border="1px", width=60)
+# Caixa de entrada de texto
+style = ttk.Style()
+style.configure("Rounded.TEntry", fieldbackground="lightgrey", borderwidth=1, relief="solid")
+entry = ttk.Entry(root, style="Rounded.TEntry", width=40)
 entry.grid(row=1, column=0, padx=10, pady=10)
 
-send_button = tk.Button(root, border="1px",bg="grey",text="Enviar", width=20, command=send_message)
+# Botão de envio
+style.configure("Rounded.TButton", relief="solid", borderwidth=1, background="grey", foreground="white")
+send_button = ttk.Button(root, text="Enviar", style="Rounded.TButton", command=send_message)
 send_button.grid(row=1, column=1, padx=10, pady=10)
 
 root.mainloop()
