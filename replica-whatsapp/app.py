@@ -84,7 +84,7 @@ def show_chat_window():
                 root.after(1000, simulate_response, message)
 
         # Botão de envio
-        send_button = tk.Button(entry_frame, text="Enviar", command=send_messag e, bg="#128c7e", fg="white")
+        send_button = tk.Button(entry_frame, text="Enviar", command=send_message, bg="#128c7e", fg="white")
         send_button.pack(side=tk.RIGHT, padx=10)
 
         # Pressionar Enter também envia a mensagem
