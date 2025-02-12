@@ -8,7 +8,7 @@ from langchain.llms import OpenAI
 load_dotenv()
 
 # Obtém chave da API do OpenAI a partir das variáveis de ambiente
-api_key = os.getenv("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")
+api_key = os.getenv("")
 if not api_key:
     raise ValueError("Chave da API do OpenAI não encontrada. Certifique-se de configurar o arquivo .env corretamente.")
 
