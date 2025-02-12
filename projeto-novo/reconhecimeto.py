@@ -1,54 +1,39 @@
-import cv2
-import mediapipe as mp
+import os
+from dotenv import load_dotenv
+from langchain import LLMChain
+from langchain.prompts import PromptTemplate
+from langchain.llms import OpenAI
 
-# Inicializando a captura de vídeo
-cap = cv2.VideoCapture(0)
+# Carrega variáveis de ambiente
+load_dotenv()
 
-# Inicializando MediaPipe para detecção de rosto e olhos
-mp_face_mesh = mp.solutions.face_mesh
-face_mesh = mp_face_mesh.FaceMesh(static_image_mode=False, max_num_faces=1, refine_landmarks=True)
+# Obtém chave da API do OpenAI a partir das variáveis de ambiente
+api_key = os.getenv("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")
+if not api_key:
+    raise ValueError("Chave da API do OpenAI não encontrada. Certifique-se de configurar o arquivo .env corretamente.")
 
-# Função para detectar se os olhos estão olhando diretamente
-def eyes_looking_forward(landmarks):
-    # Pega os pontos dos olhos (landmarks)
-    left_eye = [landmarks[33], landmarks[133]]  # Índices dos pontos da MediaPipe para olho esquerdo
-    right_eye = [landmarks[362], landmarks[263]]  # Índices para olho direito
+# Configura o modelo da OpenAI
+llm = OpenAI(temperature=0.7, openai_api_key=api_key)
 
-    # Calcula a distância entre os dois pontos para verificar o alinhamento
-    left_dist = abs(left_eye[0].x - left_eye[1].x)
-    right_dist = abs(right_eye[0].x - right_eye[1].x)
+# Define o template de prompt
+template = "Usuário: {user_input}\nAssistente:"  # Simples estrutura de prompt
+prompt = PromptTemplate(input_variables=["user_input"], template=template)
 
-    # Se a distância horizontal dos olhos for pequena, o rosto está diretamente de frente
-    return left_dist < 0.015 and right_dist < 0.015
+# Cria uma cadeia de LLM
+dialog_chain = LLMChain(llm=llm, prompt=prompt)
 
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        print("Falha ao capturar imagem")
-        break
+def chatbot():
+    print("Chatbot iniciado! Digite 'sair' para encerrar.")
+    while True:
+        user_input = input("Você: ")
+        if user_input.lower() == "sair":
+            print("Encerrando chatbot. Até logo!")
+            break
+        try:
+            response = dialog_chain.run(user_input)
+            print(f"Bot: {response.strip()}")
+        except Exception as e:
+            print("Ocorreu um erro ao gerar a resposta:", e)
 
-    # Converte a imagem para RGB (necessário pelo MediaPipe)
-    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-    # Faz a detecção dos rostos e marcas faciais
-    result = face_mesh.process(rgb_frame)
-
-    if result.multi_face_landmarks:
-        for face_landmarks in result.multi_face_landmarks:
-            # Verifica se os olhos estão olhando para frente
-            if eyes_looking_forward(face_landmarks.landmark):
-                print("Olhos olhando diretamente para a câmera. Desligando...")
-                cap.release()  # Desliga a câmera
-                cv2.destroyAllWindows()
-                break
-
-    # Exibe a imagem na janela
-    cv2.imshow('Camera', frame)
-
-    # Tecla 'q' para sair manualmente
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-# Finaliza a captura e fecha as janelas
-cap.release()
-cv2.destroyAllWindows()
+if __name__ == "__main__":
+    chatbot()

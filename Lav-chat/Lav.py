@@ -1,30 +1,19 @@
 import tkinter as tk
 from tkinter import ttk
 import random
-import wikipedia
-import speech_recognition as sr
-import pyttsx3
 import webbrowser
 
-def abrir_link():    
+def abrir_link():
     url = "https://ellijr.github.io/COFFE--Site/"
     webbrowser.open(url)
+
 def abrir_link2():
     url = "https://ellijr.github.io/CBFengenharia/"
     webbrowser.open(url)
+
 def abrir_link3():
     url = "https://ellijr.github.io/portifolio/"
     webbrowser.open(url)
-def abrir_link4():
-    url = "https://github.com/ElliJr"
-    webbrowser.open(url)
-
-# Inicializa o motor de TTS (text-to-speech)
-engine = pyttsx3.init()
-engine.setProperty('rate', 150)  # Velocidade da fala
-engine.setProperty('volume', 14)  # Nível de volume
-
-# Respostas pré-definidas do chatbot
 responses = {
     "tudo bem": ["estou bem, obrigado! e você?", "tudo ótimo por aqui! e com você?", "estou bem! como posso ajudar?", "melhor agora 😃"],
     "melhor agora": ["que bom"],
@@ -61,6 +50,7 @@ responses = {
     "ele é bom programando?": ["é... ele tá no caminho kkk"],
     "me mostre a minha data de namoro": ["28/04/24"],
     "data de namoro": ["28/04/24"],
+    "namoro": ["28/04/24"],
     "me conte uma piada": ["eu conheci um cara chamado mauro, e mauro conhece e nésia, nésia chamou mauro para comer na casa dela, e mauro disse tó indonésia"],
     "me conte uma piada boa": ["eu conheci um cara chamado mauro, e mauro conhece e nésia, nésia chamou mauro para comer na casa dela, e mauro disse tó indonésia"],
     "eu disse piada boa": ["essa foi a melhor que eu encontrei kkkkkk"],
@@ -80,71 +70,48 @@ responses = {
     "": ["se certifique de ter escrito algo mano"]
 }
 
-
-# Função que encontra a resposta apropriada
 def get_response(user_input):
     user_input = user_input.lower()
     for key in responses:
         if key in user_input:
             return random.choice(responses[key])
-    # Usa Wikipedia se não encontrar resposta na base de dados
-    try:
-        wikipedia.set_lang("pt")
-        resposta = wikipedia.summary(user_input, sentences=1, auto_suggest=False)
-        return resposta
-    except wikipedia.exceptions.DisambiguationError as e:
-        return f"A consulta pode se referir a várias coisas: {', '.join(e.options)}"
-    except wikipedia.exceptions.PageError:
-        return "Desculpe, não encontrei nenhuma página correspondente."
-    except Exception as e:
-        return f"Um erro ocorreu: {e}"
+    return "Desculpe, não entendi isso."
 
-# Função para o assistente falar
-def falar(texto):
-    engine.say(texto)
-    engine.runAndWait()
-
-# Função para enviar mensagem
 def send_message():
     user_input = entry.get()
+    if not user_input.strip():
+        return
+
     chat_history.config(state=tk.NORMAL)
-    chat_history.insert(tk.END, "Você: " + user_input + "\n")
+    chat_history.insert(tk.END, f"Você: {user_input}\n")
     entry.delete(0, tk.END)
 
     response = get_response(user_input)
-    chat_history.insert(tk.END, "Lav: " + response + "\n")
+    chat_history.insert(tk.END, f"Lav: {response}\n")
     chat_history.config(state=tk.DISABLED)
     chat_history.yview(tk.END)
-    falar(response)
 
-# Configuração da janela Tkinter
 root = tk.Tk()
 root.title("Lav🦋")
 root.geometry("500x400")
+root.configure(bg="black")
 
-# Menu
 menu_barra = tk.Menu(root)
 root.config(menu=menu_barra)
 
 arquivo_menu1 = tk.Menu(menu_barra, tearoff=0)
 menu_barra.add_cascade(label="Abrir site", menu=arquivo_menu1)
-arquivo_menu1.add_command(label="👉COFFE", command=abrir_link)
-arquivo_menu1.add_command(label="👉CBFengenharia", command=abrir_link2)
-arquivo_menu1.add_command(label="👉Portífolio", command=abrir_link3)
+arquivo_menu1.add_command(label="👉 COFFE", command=abrir_link)
+arquivo_menu1.add_command(label="👉 CBFengenharia", command=abrir_link2)
+arquivo_menu1.add_command(label="👉 Portfólio", command=abrir_link3)
 
-# Chat history (caixa de texto)
-chat_history = tk.Text(root, bd=1, bg="lightgrey", width=80, height=20, wrap=tk.WORD, state=tk.DISABLED)
+chat_history = tk.Text(root, bg="#2d2d2d", fg="white", width=58, height=15, wrap=tk.WORD, state=tk.DISABLED)
 chat_history.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
 
-# Caixa de entrada de texto
-style = ttk.Style()
-style.configure("Rounded.TEntry", fieldbackground="lightgrey", borderwidth=1, relief="solid")
-entry = ttk.Entry(root, style="Rounded.TEntry", width=40)
+entry = ttk.Entry(root, width=40)
 entry.grid(row=1, column=0, padx=10, pady=10)
 
-# Botão de envio
-style.configure("Rounded.TButton", relief="solid", borderwidth=1, background="grey", foreground="white")
-send_button = ttk.Button(root, text="Enviar", style="Rounded.TButton", command=send_message)
+send_button = ttk.Button(root, text="Enviar", command=send_message)
 send_button.grid(row=1, column=1, padx=10, pady=10)
 
 root.mainloop()
