@@ -1,33 +1,57 @@
-def adicionar (x, y):
-    return x + y
+import tkinter as tk
 
-def subtrair(x, y):
-    return x - y
+# Função para atualizar a entrada
+def clicar(botao):
+    entrada.insert(tk.END, botao)
 
-def multiplicar(x, y):
-    return x * y
+# Função para calcular o resultado
+def calcular():
+    try:
+        resultado = eval(entrada.get())
+        entrada.delete(0, tk.END)
+        entrada.insert(tk.END, str(resultado))
+    except:
+        entrada.delete(0, tk.END)
+        entrada.insert(tk.END, "Erro")
 
-def dividir(x, Y):
-    return x / y 
+# Função para limpar a entrada
+def limpar():
+    entrada.delete(0, tk.END)
 
-print("selecione  a operação")
-print("1. Adição")
-print("2. Subtração")
-print("3. multiplicação")
-print("4.Divisão")
+# Criando a janela
+janela = tk.Tk()
+janela.title("Calculadora")
+janela.geometry("300x400")
 
-escolha = input("digite o número da operação (1/2/3/4): ")
+# Campo de entrada
+entrada = tk.Entry(janela, font=("Arial", 20), justify="right")
+entrada.pack(fill="both", padx=10, pady=10)
 
-num1 = float(input("digite o primeiro numero: "))
-num2 = float(input("digite o segundo número: "))
+# Botões da calculadora
+botoes = [
+    "7", "8", "9", "/",
+    "4", "5", "6", "*",
+    "1", "2", "3", "-",
+    "0", "C", "=", "+"
+]
 
-if escolha == '1':
-    print("resultado:", adicionar(num1, num2))
-elif escolha == '2':
-    print("resultado:", subtrair(num1, num2))
-elif escolha == '3':
-    print("Resultado:", multiplicar(num1, num2))
-elif escolha == '4':
-    print("resultado:", dividir(num1, num2))
-else:
-    print("operação inválida")
+# Criando os botões
+frame = tk.Frame(janela)
+frame.pack()
+
+linha = 0
+coluna = 0
+
+for botao in botoes:
+    comando = lambda x=botao: clicar(x) if x not in ["C", "="] else (limpar() if x == "C" else calcular())
+
+    tk.Button(frame, text=botao, width=5, height=2, font=("Arial", 14),
+              command=comando).grid(row=linha, column=coluna)
+
+    coluna += 1
+    if coluna > 3:
+        coluna = 0
+        linha += 1
+
+# Rodar a interface
+janela.mainloop()
