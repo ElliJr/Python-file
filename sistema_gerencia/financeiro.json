@@ -1,0 +1,16 @@
+[
+    {
+        "Empresa": "cbfengenharia",
+        "Rendimento": 4000.0,
+        "Sal\u00e1rio": 500.0,
+        "Impostos": 1500.0,
+        "Manuten\u00e7\u00e3o": 900.0
+    },
+    {
+        "Empresa": "other",
+        "Rendimento": 100.0,
+        "Sal\u00e1rio": 1000.0,
+        "Impostos": 500.0,
+        "Manuten\u00e7\u00e3o": 800.0
+    }
+]
