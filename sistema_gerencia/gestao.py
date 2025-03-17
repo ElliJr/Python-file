@@ -1,131 +1,133 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 import json
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-# Nome do arquivo JSON
-JSON_FILE = "financeiro.json"
-
-def carregar_dados():
-    try:
-        with open(JSON_FILE, "r") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-def salvar_dados(novo_dado):
-    dados = carregar_dados()
-    dados.append(novo_dado)
-    with open(JSON_FILE, "w") as f:
-        json.dump(dados, f, indent=4)
-
-def adicionar():
-    empresa = entry_empresa.get()
-    rendimento = entry_rendimento.get()
-    salario = entry_salario.get()
-    impostos = entry_impostos.get()
-    manutencao = entry_manutencao.get()
+class Aplicativo:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Sistema de Gerenciamento")
+        self.root.attributes('-fullscreen', True)
+        
+        self.main_frame = tk.Frame(root, bg="#F8F9FA")
+        self.main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        self.sidebar = tk.Frame(self.main_frame, bg="#2D3E50", width=200)
+        self.sidebar.pack(side=tk.LEFT, fill=tk.Y)
+        
+        botoes = ["Financeiro", "Vendas", "Compras", "Clientes", "Produtos", "Relatórios", "Configurações", "Suporte"]
+        for btn in botoes:
+            tk.Button(self.sidebar, text=btn, bg="#2D3E50", fg="white", font=("Arial", 12), bd=0, relief="flat", 
+                      activebackground="#1B2B3A", padx=10, pady=5, anchor='w').pack(fill=tk.X)
+        
+        self.header = tk.Frame(self.main_frame, bg="#E9ECEF", height=50)
+        self.header.pack(fill=tk.X)
+        
+        self.search_entry = tk.Entry(self.header, font=("Arial", 12), width=40)
+        self.search_entry.pack(pady=10, padx=20, side=tk.LEFT)
+        
+        tk.Button(self.header, text="🔍", font=("Arial", 12), command=self.pesquisar).pack(pady=10, side=tk.LEFT)
+        
+        self.content_frame = tk.Frame(self.main_frame, bg="white")
+        self.content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        self.tab_control = ttk.Notebook(self.content_frame)
+        self.tab_produtos = ttk.Frame(self.tab_control)
+        self.tab_control.add(self.tab_produtos, text="Produtos")
+        self.tab_control.pack(fill=tk.BOTH, expand=True)
+        
+        self.tree = ttk.Treeview(self.tab_produtos, columns=("#1", "#2", "#3", "#4", "#5"), show="headings")
+        self.tree.heading("#1", text="Cód")
+        self.tree.heading("#2", text="Produto")
+        self.tree.heading("#3", text="Categoria")
+        self.tree.heading("#4", text="Preço Venda")
+        self.tree.heading("#5", text="Estoque")
+        
+        self.tree.column("#1", width=50, anchor="center")
+        self.tree.column("#2", width=200, anchor="w")
+        self.tree.column("#3", width=150, anchor="w")
+        self.tree.column("#4", width=100, anchor="center")
+        self.tree.column("#5", width=80, anchor="center")
+        
+        self.tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        self.secao_botoes = tk.Frame(self.tab_produtos, bg="white")
+        self.secao_botoes.pack(pady=10)
+        
+        self.btn_novo = tk.Button(self.secao_botoes, text="+ Novo", font=("Arial", 12), bg="#4CAF50", fg="white", 
+                                  command=self.abrir_janela_novo_produto)
+        self.btn_novo.grid(row=0, column=0, padx=10, pady=10)
+        
+        self.botao_remover = tk.Button(self.secao_botoes, text="Remover Tipo", font=("Arial", 14), bg="#F44336", fg="white", 
+                                       activebackground="#e53935", command=self.remover_tipo, relief="raised")
+        self.botao_remover.grid(row=0, column=1, padx=10, pady=10)
+        
+        self.produtos = []
+        self.carregar_produtos()
+        
+    def carregar_produtos(self):
+        try:
+            with open("produtos.json", "r") as file:
+                self.produtos = json.load(file)
+                for produto in self.produtos:
+                    self.tree.insert("", "end", values=produto)
+        except FileNotFoundError:
+            self.produtos = []
     
-    if not empresa or not rendimento or not salario or not impostos or not manutencao:
-        messagebox.showwarning("Aviso", "Todos os campos devem ser preenchidos!")
-        return
+    def salvar_produtos(self):
+        with open("produtos.json", "w") as file:
+            json.dump(self.produtos, file, indent=4)
     
-    novo_dado = {
-        "Empresa": empresa,
-        "Rendimento": float(rendimento),
-        "Salário": float(salario),
-        "Impostos": float(impostos),
-        "Manutenção": float(manutencao)
-    }
-    salvar_dados(novo_dado)
+    def remover_tipo(self):
+        selecionado = self.tree.selection()
+        if not selecionado:
+            messagebox.showwarning("Aviso", "Selecione um item para remover.")
+            return
+        for item in selecionado:
+            valores = self.tree.item(item, "values")
+            self.produtos = [p for p in self.produtos if p != list(valores)]
+            self.tree.delete(item)
+        self.salvar_produtos()
     
-    lista.insert(tk.END, f"{empresa} - R$ {rendimento}")
-    entry_empresa.delete(0, tk.END)
-    entry_rendimento.delete(0, tk.END)
-    entry_salario.delete(0, tk.END)
-    entry_impostos.delete(0, tk.END)
-    entry_manutencao.delete(0, tk.END)
-    atualizar_grafico()
-
-def carregar_lista():
-    dados = carregar_dados()
-    for item in dados:
-        lista.insert(tk.END, f"{item['Empresa']} - R$ {item['Rendimento']}")
-
-def atualizar_grafico():
-    dados = carregar_dados()
-    if not dados:
-        return
+    def abrir_janela_novo_produto(self):
+        nova_janela = tk.Toplevel(self.root)
+        nova_janela.title("Adicionar Novo Produto")
+        nova_janela.geometry("400x300")
+        
+        tk.Label(nova_janela, text="Nome do Produto:").pack(pady=5)
+        entry_nome = tk.Entry(nova_janela)
+        entry_nome.pack(pady=5)
+        
+        tk.Label(nova_janela, text="Categoria:").pack(pady=5)
+        entry_categoria = tk.Entry(nova_janela)
+        entry_categoria.pack(pady=5)
+        
+        tk.Label(nova_janela, text="Preço:").pack(pady=5)
+        entry_preco = tk.Entry(nova_janela)
+        entry_preco.pack(pady=5)
+        
+        tk.Label(nova_janela, text="Estoque:").pack(pady=5)
+        entry_estoque = tk.Entry(nova_janela)
+        entry_estoque.pack(pady=5)
+        
+        def adicionar():
+            novo_produto = [len(self.produtos) + 1, entry_nome.get(), entry_categoria.get(), entry_preco.get(), entry_estoque.get()]
+            self.produtos.append(novo_produto)
+            self.tree.insert("", "end", values=novo_produto)
+            self.salvar_produtos()
+            nova_janela.destroy()
+        
+        tk.Button(nova_janela, text="Adicionar", command=adicionar).pack(pady=10)
     
-    empresas = [d["Empresa"] for d in dados]
-    rendimentos = [d["Rendimento"] for d in dados]
-    salarios = [d["Salário"] for d in dados]
-    impostos = [d["Impostos"] for d in dados]
-    manutencao = [d["Manutenção"] for d in dados]
-    
-    fig, ax = plt.subplots()
-    ax.bar(empresas, rendimentos, label="Rendimento", color='green')
-    ax.bar(empresas, salarios, label="Salário", color='blue', alpha=0.7)
-    ax.bar(empresas, impostos, label="Impostos", color='red', alpha=0.7)
-    ax.bar(empresas, manutencao, label="Manutenção", color='orange', alpha=0.7)
-    
-    ax.set_ylabel("Valores em R$")
-    ax.set_title("Comparação Financeira das Empresas")
-    ax.legend()
-    
-    for widget in frame_grafico.winfo_children():
-        widget.destroy()
-    
-    canvas = FigureCanvasTkAgg(fig, master=frame_grafico)
-    canvas.draw()
-    canvas.get_tk_widget().pack()
-
-# Criando a interface gráfica
-root = tk.Tk()
-root.title("Sistema de Gerenciamento Financeiro")
-root.attributes('-fullscreen', True)
-
-frame_form = tk.Frame(root)
-frame_form.pack(pady=20)
-
-# Labels e Entrys
-tk.Label(frame_form, text="Empresa:").grid(row=0, column=0)
-entry_empresa = tk.Entry(frame_form)
-entry_empresa.grid(row=0, column=1)
-
-tk.Label(frame_form, text="Rendimento (R$):").grid(row=1, column=0)
-entry_rendimento = tk.Entry(frame_form)
-entry_rendimento.grid(row=1, column=1)
-
-tk.Label(frame_form, text="Salário (R$):").grid(row=2, column=0)
-entry_salario = tk.Entry(frame_form)
-entry_salario.grid(row=2, column=1)
-
-tk.Label(frame_form, text="Impostos (R$):").grid(row=3, column=0)
-entry_impostos = tk.Entry(frame_form)
-entry_impostos.grid(row=3, column=1)
-
-tk.Label(frame_form, text="Manutenção (R$):").grid(row=4, column=0)
-entry_manutencao = tk.Entry(frame_form)
-entry_manutencao.grid(row=4, column=1)
-
-# Botão para adicionar
-tk.Button(frame_form, text="Adicionar", command=adicionar).grid(row=5, column=0, columnspan=2)
-
-# Lista para exibir os dados
-lista = tk.Listbox(root, width=50)
-lista.pack(pady=10)
-
-# Frame para o gráfico
-frame_grafico = tk.Frame(root)
-frame_grafico.pack(pady=20)
-
-# Botão para sair
-tk.Button(root, text="Sair", command=root.quit).pack(pady=10)
-
-# Carregar dados existentes
-carregar_lista()
-atualizar_grafico()
-
-root.mainloop()
+    def pesquisar(self):
+        termo = self.search_entry.get().lower()
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+        
+        for produto in self.produtos:
+            if termo in str(produto[1]).lower():
+                self.tree.insert("", "end", values=produto)
+        
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = Aplicativo(root)
+    root.mainloop()
