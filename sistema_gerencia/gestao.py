@@ -6,36 +6,46 @@ class Aplicativo:
     def __init__(self, root):
         self.root = root
         self.root.title("Sistema de Gerenciamento")
-        self.root.attributes('-fullscreen', True)
+        self.root.geometry("1300x800")
         
-        self.main_frame = tk.Frame(root, bg="#F8F9FA")
+        # Cores
+        self.cor_principal = "#1E3A5F"  # Azul escuro
+        self.cor_secundaria = "#2C5EAA"  # Azul médio
+        self.cor_destaque = "#D9A87E"  # Marrom suave
+        self.cor_fonte = "white"
+        
+        self.main_frame = tk.Frame(root, bg=self.cor_principal)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
         
-        self.sidebar = tk.Frame(self.main_frame, bg="#2D3E50", width=200)
+        self.sidebar = tk.Frame(self.main_frame, bg=self.cor_secundaria, width=200)
         self.sidebar.pack(side=tk.LEFT, fill=tk.Y)
+        
+        self.content_frame = tk.Frame(self.main_frame, bg="#0e075b")
+        self.content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        self.paginas = {}
         
         botoes = ["Financeiro", "Vendas", "Compras", "Clientes", "Produtos", "Relatórios", "Configurações", "Suporte"]
         for btn in botoes:
-            tk.Button(self.sidebar, text=btn, bg="#2D3E50", fg="white", font=("Arial", 12), bd=0, relief="flat", 
-                      activebackground="#1B2B3A", padx=10, pady=5, anchor='w').pack(fill=tk.X)
+            tk.Button(self.sidebar, text=btn, bg=self.cor_secundaria, fg=self.cor_fonte, font=("Arial", 12), bd=0, relief="flat", 
+                      activebackground=self.cor_destaque, padx=10, pady=5, anchor='w', command=lambda b=btn: self.mudar_pagina(b)).pack(fill=tk.X)
         
-        self.header = tk.Frame(self.main_frame, bg="#E9ECEF", height=50)
-        self.header.pack(fill=tk.X)
+        self.criar_paginas()
+        self.mudar_pagina("Login")
         
-        self.search_entry = tk.Entry(self.header, font=("Arial", 12), width=40)
-        self.search_entry.pack(pady=10, padx=20, side=tk.LEFT)
+    def criar_paginas(self):
+        for nome in ["Financeiro", "Vendas", "Compras", "Clientes", "Produtos", "Relatórios", "Configurações", "Suporte", "Login"]:
+            frame = tk.Frame(self.content_frame, bg="#c16e65")
+            label = tk.Label(frame, text=nome, font=("Arial", 24), bg="white")
+            label.pack(pady=20)
+            self.paginas[nome] = frame
+            
+        self.criar_pagina_produtos()
         
-        tk.Button(self.header, text="🔍", font=("Arial", 12), command=self.pesquisar).pack(pady=10, side=tk.LEFT)
+    def criar_pagina_produtos(self):
+        frame = self.paginas["Produtos"]
         
-        self.content_frame = tk.Frame(self.main_frame, bg="white")
-        self.content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
-        self.tab_control = ttk.Notebook(self.content_frame)
-        self.tab_produtos = ttk.Frame(self.tab_control)
-        self.tab_control.add(self.tab_produtos, text="Produtos")
-        self.tab_control.pack(fill=tk.BOTH, expand=True)
-        
-        self.tree = ttk.Treeview(self.tab_produtos, columns=("#1", "#2", "#3", "#4", "#5"), show="headings")
+        self.tree = ttk.Treeview(frame, columns=("#1", "#2", "#3", "#4", "#5"), show="headings")
         self.tree.heading("#1", text="Cód")
         self.tree.heading("#2", text="Produto")
         self.tree.heading("#3", text="Categoria")
@@ -50,19 +60,25 @@ class Aplicativo:
         
         self.tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        self.secao_botoes = tk.Frame(self.tab_produtos, bg="white")
+        self.secao_botoes = tk.Frame(frame, bg="white")
         self.secao_botoes.pack(pady=10)
         
-        self.btn_novo = tk.Button(self.secao_botoes, text="+ Novo", font=("Arial", 12), bg="#4CAF50", fg="white", 
+        self.btn_novo = tk.Button(self.secao_botoes, text="+ Novo", font=("Arial", 12), bg=self.cor_secundaria, fg=self.cor_fonte, 
                                   command=self.abrir_janela_novo_produto)
         self.btn_novo.grid(row=0, column=0, padx=10, pady=10)
         
-        self.botao_remover = tk.Button(self.secao_botoes, text="Remover Tipo", font=("Arial", 14), bg="#F44336", fg="white", 
+        self.botao_remover = tk.Button(self.secao_botoes, text="Remover Tipo", font=("Arial", 14), bg=self.cor_secundaria, fg=self.cor_fonte, 
                                        activebackground="#e53935", command=self.remover_tipo, relief="raised")
         self.botao_remover.grid(row=0, column=1, padx=10, pady=10)
         
         self.produtos = []
         self.carregar_produtos()
+        
+    def mudar_pagina(self, pagina):
+        for frame in self.paginas.values():
+            frame.pack_forget()
+        
+        self.paginas[pagina].pack(fill=tk.BOTH, expand=True)
         
     def carregar_produtos(self):
         try:
@@ -82,10 +98,12 @@ class Aplicativo:
         if not selecionado:
             messagebox.showwarning("Aviso", "Selecione um item para remover.")
             return
+        
         for item in selecionado:
             valores = self.tree.item(item, "values")
             self.produtos = [p for p in self.produtos if p != list(valores)]
             self.tree.delete(item)
+        
         self.salvar_produtos()
     
     def abrir_janela_novo_produto(self):
@@ -93,7 +111,7 @@ class Aplicativo:
         nova_janela.title("Adicionar Novo Produto")
         nova_janela.geometry("400x300")
         
-        tk.Label(nova_janela, text="Nome do Produto:").pack(pady=5)
+        tk.Label(nova_janela,text="Nome do Produto:").pack(pady=5)
         entry_nome = tk.Entry(nova_janela)
         entry_nome.pack(pady=5)
         
@@ -118,15 +136,6 @@ class Aplicativo:
         
         tk.Button(nova_janela, text="Adicionar", command=adicionar).pack(pady=10)
     
-    def pesquisar(self):
-        termo = self.search_entry.get().lower()
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-        
-        for produto in self.produtos:
-            if termo in str(produto[1]).lower():
-                self.tree.insert("", "end", values=produto)
-        
 if __name__ == "__main__":
     root = tk.Tk()
     app = Aplicativo(root)
