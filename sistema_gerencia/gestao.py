@@ -197,32 +197,12 @@ class Aplicativo:
         label_conta = tk.Label(frame, text="Monitoramento da Conta", font=("Arial", 24), bg="white")
         label_conta.pack(pady=20)
         
-        self.conta_info = self.carregar_dados_conta("usuarios.json")
+        self.conta_info = self.carregar_dados("usuarios.json")
         
         label_nome = tk.Label(frame, text=f"Nome: {self.conta_info['nome']}", font=("Arial", 14), bg="white")
         label_nome.pack(pady=10)
         
-        label_email = tk.Label(frame, text=f"Email: {self.conta_info['email']}", font=("Arial", 14), bg="white")
-        label_email.pack(pady=10)
-        
-        label_telefone = tk.Label(frame, text=f"Telefone: {self.conta_info['telefone']}", font=("Arial", 14), bg="white")
-        label_telefone.pack(pady=10)
-        
         tk.Button(frame, text="Editar Conta", font=("Arial", 12), bg=self.cor_secundaria, fg=self.cor_fonte, command=self.abrir_janela_editar_conta).pack(pady=20)
-    
-    def carregar_dados_usuarios(self, arquivo):
-        try:
-            with open(arquivo, "r") as file:
-                usuarios = json.load(file)
-            # Verificar se as informações completas existem
-            if isinstance(usuarios, dict):
-                if "nome" not in usuarios or "email" not in usuarios or "telefone" not in usuarios:
-                    return False  # Significa que falta dados
-            return usuarios
-        except FileNotFoundError:
-            return False  # Arquivo não encontrado
-
-    
     
     def carregar_dados(self, arquivo, lista, tree):
         try:
@@ -346,3 +326,4 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = Aplicativo(root)
     root.mainloop()
+2
