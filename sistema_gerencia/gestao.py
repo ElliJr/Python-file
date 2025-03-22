@@ -1,11 +1,13 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import json
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class Aplicativo:
     def __init__(self, root):
         self.root = root
-        self.root.title("Sistema de Gerenciamento")
+        self.root.title(" EL Enterprise Language⚙️")
         self.root.geometry("1300x800")
         
         # Cores
@@ -140,6 +142,7 @@ class Aplicativo:
         self.criar_pagina_produtos()
         self.criar_pagina_clientes()
         self.criar_pagina_conta()
+        self.criar_pagina_Financeiro()
     
     def criar_pagina_produtos(self):
         frame = self.paginas["Produtos"]
@@ -182,6 +185,12 @@ class Aplicativo:
         tk.Button(self.secao_botoes_clientes, text="+ Novo", font=("Arial", 12), bg=self.cor_secundaria, fg=self.cor_fonte, command=lambda: self.abrir_janela_novo("clientes.json", self.clientes, self.tree_clientes, ["Nome", "CPF", "Email", "Telefone"])).grid(row=0, column=0, padx=10, pady=10)
         tk.Button(self.secao_botoes_clientes, text="Remover", font=("Arial", 12), bg=self.cor_secundaria, fg=self.cor_fonte, command=lambda: self.remover_item("clientes.json", self.clientes, self.tree_clientes)).grid(row=0, column=1, padx=10, pady=10)
     
+    def criar_pagina_Financeiro(self):
+        frame = self.paginas["Financeiro"]
+
+
+
+
     def criar_pagina_conta(self):
         frame = self.paginas["Conta"]
         
@@ -228,6 +237,7 @@ class Aplicativo:
         with open(arquivo, "w") as file:
             json.dump(lista, file, indent=4)
     
+
 
     def abrir_janela_editar_conta(self):
         nova_janela = tk.Toplevel(self.root)
