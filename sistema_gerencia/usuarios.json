@@ -1,4 +1,11 @@
-{
-    "elli": "102030",
-    "Heitor": "3x"
-}
+[
+    {
+        "usuario": "elli",
+        "senha": "123456789"
+    },
+    {
+        "usuario": "Lavinia",
+        "Email": "280424",
+        "senha": "280424"
+    }
+]

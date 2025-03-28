@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 import json
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+# import bcrypt
 
 class Aplicativo:
     def __init__(self, root):
@@ -43,17 +44,25 @@ class Aplicativo:
         botao_cadastro.pack(pady=10)
 
     def verificar_login(self):
-        usuario = self.entry_usuario.get()
-        senha = self.entry_senha.get()
-        
-        # Carregar usuários registrados
+        usuario = self.entry_usuario.get().strip()
+        senha = self.entry_senha.get().strip()
+
+    # Carregar usuários registrados
         usuarios = self.carregar_usuarios()
-        
-        if usuario in usuarios and usuarios[usuario] == senha:
-            self.login_frame.pack_forget()
-            self.iniciar_sistema()
-        else:
-            messagebox.showerror("Erro", "Usuário ou senha inválidos.")
+
+        for u in usuarios:
+            if u["usuario"] == usuario:
+                if u["senha"] == senha:  # Comparação direta sem hash
+                    self.usuario_logado = usuario
+                    self.login_frame.pack_forget()
+                    self.iniciar_sistema()
+                    return
+                else:
+                    messagebox.showerror("Erro", "Usuário não encontrado.")
+                    return
+
+                    # messagebox.showerror("Erro", "Usuário não encontrado.")
+
     
     def cadastro_tela(self):
         nova_janela = tk.Toplevel(self.root)
@@ -65,27 +74,38 @@ class Aplicativo:
         entry_usuario = tk.Entry(nova_janela, font=("Arial", 14))
         entry_usuario.pack(pady=5)
         
+        # label_email = tk.Label(nova_janela, text="Email:", font=("Arial", 14))
+        # label_email.pack(pady=5)
+        # entry_email = tk.Entry(nova_janela, font=("Arial", 14))
+        # entry_email.pack(pady=5)
+        
         label_senha = tk.Label(nova_janela, text="Senha:", font=("Arial", 14))
         label_senha.pack(pady=5)
         entry_senha = tk.Entry(nova_janela, font=("Arial", 14), show="*")
         entry_senha.pack(pady=5)
         
         def salvar_usuario():
-            usuario = entry_usuario.get()
-            senha = entry_senha.get()
+            usuario = entry_usuario.get().strip()
+            email = entry_senha.get().strip()
+            senha = entry_senha.get().strip()
             
             if not usuario or not senha:
                 messagebox.showerror("Erro", "Preencha todos os campos.")
                 return
-            
-            # Salvar o usuário e senha no arquivo
+
+            usuarios = self.carregar_usuarios()
+
+            # Verifica se o usuário já existe
             usuarios = self.carregar_usuarios()
             if usuario in usuarios:
                 messagebox.showerror("Erro", "Usuário já existe.")
                 return
             
-            usuarios[usuario] = senha
+            
+            # Adiciona novo usuário
+            usuarios.append({"usuario": usuario, "Email": email,"senha": senha})
             self.salvar_usuarios(usuarios)
+
             messagebox.showinfo("Sucesso", "Cadastro realizado com sucesso!")
             nova_janela.destroy()
         
@@ -94,14 +114,15 @@ class Aplicativo:
     
     def carregar_usuarios(self):
         try:
-            with open("usuarios.json", "r") as file:
-                return json.load(file)
+            with open("usuarios.json", "r", encoding="utf-8") as file:
+                dados = json.load(file)
+                return dados if isinstance(dados, list) else []
         except (FileNotFoundError, json.JSONDecodeError):
-            return {}
+            return []
 
     def salvar_usuarios(self, usuarios):
-        with open("usuarios.json", "w") as file:
-            json.dump(usuarios, file, indent=4)
+        with open("usuarios.json", "w", encoding="utf-8") as file:
+            json.dump(usuarios, file, indent=4, ensure_ascii=False)
     
     def iniciar_sistema(self):
         self.main_frame = tk.Frame(self.root, bg=self.cor_principal)
@@ -142,7 +163,6 @@ class Aplicativo:
         self.criar_pagina_produtos()
         self.criar_pagina_clientes()
         self.criar_pagina_conta()
-        self.criar_pagina_Financeiro()
     
     def criar_pagina_produtos(self):
         frame = self.paginas["Produtos"]
@@ -183,25 +203,32 @@ class Aplicativo:
         self.secao_botoes_clientes.pack(pady=10)
         
         tk.Button(self.secao_botoes_clientes, text="+ Novo", font=("Arial", 12), bg=self.cor_secundaria, fg=self.cor_fonte, command=lambda: self.abrir_janela_novo("clientes.json", self.clientes, self.tree_clientes, ["Nome", "CPF", "Email", "Telefone"])).grid(row=0, column=0, padx=10, pady=10)
-        tk.Button(self.secao_botoes_clientes, text="Remover", font=("Arial", 12), bg=self.cor_secundaria, fg=self.cor_fonte, command=lambda: self.remover_item("clientes.json", self.clientes, self.tree_clientes)).grid(row=0, column=1, padx=10, pady=10)
-    
-    def criar_pagina_Financeiro(self):
-        frame = self.paginas["Financeiro"]
-
-
+        tk.Button(self.secao_botoes_clientes, text="- Remover", font=("Arial", 12), bg=self.cor_secundaria, fg=self.cor_fonte, command=lambda: self.remover_item("clientes.json", self.clientes, self.tree_clientes)).grid(row=0, column=1, padx=10, pady=10)
 
 
     def criar_pagina_conta(self):
         frame = self.paginas["Conta"]
-        
-        label_conta = tk.Label(frame, text="Monitoramento da Conta", font=("Arial", 24), bg="white")
+    
+        # Certifique-se de que um usuário está logado
+        if not hasattr(self, "usuario_logado"):
+            messagebox.showerror("Erro", "Nenhum usuário logado.")
+            return
+    
+        label_conta = tk.Label(frame, text=f"Bem vindo(a) {self.usuario_logado}", font=("Arial", 24), bg="white")
         label_conta.pack(pady=20)
-        
+    
         self.conta_info = self.carregar_dados("usuarios.json")
-        
-        label_nome = tk.Label(frame, text=f"Nome: {self.conta_info['nome']}", font=("Arial", 14), bg="white")
-        label_nome.pack(pady=10)
-        
+
+        # Procurar os dados do usuário logado
+        usuario_info = next((u for u in self.conta_info if u["usuario"] == self.usuario_logado), None)
+
+        if usuario_info:
+            label_nome = tk.Label(frame, text=f"Nome: {usuario_info['usuario']}", font=("Arial", 14), bg="white")
+            label_nome.pack(pady=10)
+        else:
+            label_nome = tk.Label(frame, text="Usuário não encontrado", font=("Arial", 14), bg="white")
+            label_nome.pack(pady=10)
+    
         tk.Button(frame, text="Editar Conta", font=("Arial", 12), bg=self.cor_secundaria, fg=self.cor_fonte, command=self.abrir_janela_editar_conta).pack(pady=20)
     
     def carregar_dados(self, arquivo, lista, tree):
@@ -217,8 +244,6 @@ class Aplicativo:
         with open(arquivo, "w") as file:
             json.dump(lista, file, indent=4)
     
-
-
     def abrir_janela_editar_conta(self):
         nova_janela = tk.Toplevel(self.root)
         nova_janela.title("Editar Conta")
@@ -326,4 +351,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = Aplicativo(root)
     root.mainloop()
-2
