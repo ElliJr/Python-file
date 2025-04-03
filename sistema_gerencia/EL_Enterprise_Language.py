@@ -90,14 +90,12 @@ class Aplicativo:
         
         def salvar_usuario():
             usuario = entry_usuario.get().strip()
-            email = entry_senha.get().strip()
+            email = entry_email.get().strip()
             senha = entry_senha.get().strip()
             
-            if not usuario or email or not senha:
+            if not usuario or not senha:
                 messagebox.showerror("Erro", "Preencha todos os campos.")
                 return
-
-            usuarios = self.carregar_usuarios()
 
             # Verifica se o usuário já existe
             usuarios = self.carregar_usuarios()
@@ -107,9 +105,9 @@ class Aplicativo:
             
             
             # Adiciona novo usuário
-            usuarios.append({"usuario": usuario, "Email": email,"senha": senha})
+            usuarios.append({"usuario": usuario, "email":email ,"senha": senha})
             self.salvar_usuarios(usuarios)
-
+            
             messagebox.showinfo("Sucesso", "Cadastro realizado com sucesso!")
             nova_janela.destroy()
         
