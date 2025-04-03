@@ -3,6 +3,10 @@ from tkinter import ttk, messagebox
 import json
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import smtplib
+import os
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 # import bcrypt
 
 class Aplicativo:
@@ -74,10 +78,10 @@ class Aplicativo:
         entry_usuario = tk.Entry(nova_janela, font=("Arial", 14))
         entry_usuario.pack(pady=5)
         
-        # label_email = tk.Label(nova_janela, text="Email:", font=("Arial", 14))
-        # label_email.pack(pady=5)
-        # entry_email = tk.Entry(nova_janela, font=("Arial", 14))
-        # entry_email.pack(pady=5)
+        label_email = tk.Label(nova_janela, text="Email:", font=("Arial", 14))
+        label_email.pack(pady=5)
+        entry_email = tk.Entry(nova_janela, font=("Arial", 14))
+        entry_email.pack(pady=5)
         
         label_senha = tk.Label(nova_janela, text="Senha:", font=("Arial", 14))
         label_senha.pack(pady=5)
@@ -89,7 +93,7 @@ class Aplicativo:
             email = entry_senha.get().strip()
             senha = entry_senha.get().strip()
             
-            if not usuario or not senha:
+            if not usuario or email or not senha:
                 messagebox.showerror("Erro", "Preencha todos os campos.")
                 return
 
@@ -162,6 +166,7 @@ class Aplicativo:
         
         self.criar_pagina_produtos()
         self.criar_pagina_clientes()
+        self.criar_pagina_Suporte()
         self.criar_pagina_conta()
     
     def criar_pagina_produtos(self):
@@ -182,8 +187,8 @@ class Aplicativo:
         self.secao_botoes_produtos = tk.Frame(frame, bg="white")
         self.secao_botoes_produtos.pack(pady=10)
         
-        tk.Button(self.secao_botoes_produtos, text="+ Novo", font=("Arial", 12), bg=self.cor_secundaria, fg=self.cor_fonte, command=lambda: self.abrir_janela_novo("produtos.json", self.produtos, self.tree_produtos, ["Nome do Produto", "Categoria", "Preço", "Estoque"])).grid(row=0, column=0, padx=10, pady=10)
-        tk.Button(self.secao_botoes_produtos, text="Remover", font=("Arial", 12), bg=self.cor_secundaria, fg=self.cor_fonte, command=lambda: self.remover_item("produtos.json", self.produtos, self.tree_produtos)).grid(row=0, column=1, padx=10, pady=10)
+        tk.Button(self.secao_botoes_produtos, text="+ Novo", font=("Arial", 12), bg=self.cor_destaque, fg=self.cor_fonte, command=lambda: self.abrir_janela_novo("produtos.json", self.produtos, self.tree_produtos, ["Nome do Produto", "Categoria", "Preço", "Estoque"])).grid(row=0, column=0, padx=10, pady=10)
+        tk.Button(self.secao_botoes_produtos, text="Remover", font=("Arial", 12), bg=self.cor_destaque  , fg=self.cor_fonte, command=lambda: self.remover_item("produtos.json", self.produtos, self.tree_produtos)).grid(row=0, column=1, padx=10, pady=10)
     
     def criar_pagina_clientes(self):
         frame = self.paginas["Clientes"]
@@ -205,6 +210,12 @@ class Aplicativo:
         tk.Button(self.secao_botoes_clientes, text="+ Novo", font=("Arial", 12), bg=self.cor_secundaria, fg=self.cor_fonte, command=lambda: self.abrir_janela_novo("clientes.json", self.clientes, self.tree_clientes, ["Nome", "CPF", "Email", "Telefone"])).grid(row=0, column=0, padx=10, pady=10)
         tk.Button(self.secao_botoes_clientes, text="- Remover", font=("Arial", 12), bg=self.cor_secundaria, fg=self.cor_fonte, command=lambda: self.remover_item("clientes.json", self.clientes, self.tree_clientes)).grid(row=0, column=1, padx=10, pady=10)
 
+    def criar_pagina_Suporte(self):
+        frame = self.paginas["Suporte"]
+        
+        botao_suporte = tk.Button(frame, text="Suporte", font=("Arial", 12), bg=self.cor_secundaria, command=lambda: self.abrir_janela_suporte())
+        botao_suporte.pack(pady=20)
+
 
     def criar_pagina_conta(self):
         frame = self.paginas["Conta"]
@@ -214,16 +225,22 @@ class Aplicativo:
             messagebox.showerror("Erro", "Nenhum usuário logado.")
             return
     
-        label_conta = tk.Label(frame, text=f"Bem vindo(a) {self.usuario_logado}", font=("Arial", 24), bg="white")
-        label_conta.pack(pady=20)
+        label_user = tk.Label(frame, text=f"Bem vindo(a) {self.usuario_logado}", font=("Arial", 24), bg="white")
+        label_user.pack(pady=20)
+        label_email = tk.Label(frame, text=f"Bem vindo(a) {self.usuario_email}", font=("Arial", 24), bg="white")
+        label_email.pack(pady=20)
     
-        self.conta_info = self.carregar_dados("usuarios.json")
+        self.conta_user = self.carregar_dados("usuarios.json")
+        self.conta_email = self.carregar_dados("usuarios.json")
 
         # Procurar os dados do usuário logado
-        usuario_info = next((u for u in self.conta_info if u["usuario"] == self.usuario_logado), None)
+        usuario_user = next((u for u in self.conta_user if u["usuario"] == self.usuario_logado), None)
+        usuario_email = next((u for u in self.conta_email if u["usuario"] == self.usuario_email), None)
 
-        if usuario_info:
-            label_nome = tk.Label(frame, text=f"Nome: {usuario_info['usuario']}", font=("Arial", 14), bg="white")
+        if usuario_user and usuario_email:
+            label_nome = tk.Label(frame, text=f"Nome: {usuario_user['usuario']}", font=("Arial", 14), bg="white")
+            label_nome.pack(pady=10)
+            label_nome = tk.Label(frame, text=f"Nome: {usuario_email['usuario']}", font=("Arial", 14), bg="white")
             label_nome.pack(pady=10)
         else:
             label_nome = tk.Label(frame, text="Usuário não encontrado", font=("Arial", 14), bg="white")
@@ -326,26 +343,12 @@ class Aplicativo:
             tree.delete(item)
         self.salvar_dados(arquivo, lista)
     
-    def abrir_janela_novo(self, arquivo, lista, tree, campos):
-        nova_janela = tk.Toplevel(self.root)
-        nova_janela.title("Adicionar Novo Registro")
-        nova_janela.geometry("400x300")
-        
-        entradas = []
-        for campo in campos:
-            tk.Label(nova_janela, text=campo + ":").pack(pady=5)
-            entry = tk.Entry(nova_janela)
-            entry.pack(pady=5)
-            entradas.append(entry)
-        
-        def adicionar():
-            novo_item = [entry.get() for entry in entradas]
-            lista.append(novo_item)
-            tree.insert("", "end", values=novo_item)
-            self.salvar_dados(arquivo, lista)
-            nova_janela.destroy()
-        
-        tk.Button(nova_janela, text="Adicionar", command=adicionar).pack(pady=10)
+
+    def abrir_janela_suporte(self, campos):
+        janela_suporte = tk.Toplevel(self.root)
+        janela_suporte.title("Suporte")
+        janela_suporte.geometry("400x300")
+
 
 if __name__ == "__main__":
     root = tk.Tk()
